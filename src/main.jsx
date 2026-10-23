@@ -19,7 +19,8 @@ import {
 import './styles.css'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJzY3BraWJtdnV0bWZhd2pzdnBwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI3NTQwMzgsImV4cCI6MjEwODMzMDAzOH0.4ENz3UIDdZ5VWHJs9lvUhYxjV6Hay3mtVkL3-jjIkgU'
+
 
 export const supabase =
   supabaseUrl && supabaseAnonKey
