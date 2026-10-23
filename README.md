@@ -1,4 +1,4 @@
-# MOI Photography — Concept Library (starter)
+# THUVIENCONCEPT — Concept Library (starter)
 
 A starter web app for browsing photography concepts, selecting images, and exporting a contact sheet for Zalo.
 
