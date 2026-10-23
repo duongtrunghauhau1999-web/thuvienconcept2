@@ -102,19 +102,6 @@ function App() {
     // Luôn tải concept cho tất cả người dùng
     loadConcepts()
 
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data?.session ?? null)
-    })
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
-      setSession(newSession)
-      loadConcepts()
-    })
-
-    return () => subscription.unsubscribe()
-  }, [loadConcepts])
-
-
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
       setSession(newSession)
       if (newSession) loadConcepts()
@@ -217,7 +204,6 @@ function App() {
     if (!supabase) return
     await supabase.auth.signOut()
     setSession(null)
-    setDbConcepts([])
     setNotice('Đã đăng xuất.')
   }
 
