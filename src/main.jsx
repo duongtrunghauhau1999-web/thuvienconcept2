@@ -1,5 +1,4 @@
-
-import React, { useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { createClient } from '@supabase/supabase-js'
 import html2canvas from 'html2canvas'
@@ -14,13 +13,17 @@ import {
   ShieldCheck,
   ArrowLeft,
   Plus,
-  Sparkles
+  Sparkles,
+  Trash2,
+  Upload,
+  LogOut
 } from 'lucide-react'
 import './styles.css'
 
 const supabaseUrl = 'https://rscpkibmvutmfawjsvpp.supabase.co'
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJzY3BraWJtdnV0bWZhd2pzdnBwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI3NTQwMzgsImV4cCI6MjEwODMzMDAzOH0.4ENz3UIDdZ5VWHJs9lvUhYxjV6Hay3mtVkL3-jjIkgU'
 
+const BUCKET = 'concept-images'
 
 export const supabase =
   supabaseUrl && supabaseAnonKey
@@ -39,90 +42,18 @@ const categories = [
 ]
 
 const demos = [
-  {
-    id: 'd1',
-    category: 'Bầu',
-    title: 'Soft maternity',
-    type: 'Bộ concept',
-    image: 'https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=900&q=80'
-  },
-  {
-    id: 'd2',
-    category: 'Beauty',
-    title: 'Natural beauty',
-    type: 'Ảnh concept',
-    image: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=900&q=80'
-  },
-  {
-    id: 'd3',
-    category: 'Baby',
-    title: 'Little sunshine',
-    type: 'Bộ concept',
-    image: 'https://images.unsplash.com/photo-1519689680058-324335c77eba?auto=format&fit=crop&w=900&q=80'
-  },
-  {
-    id: 'd4',
-    category: 'Kid',
-    title: 'Playful day',
-    type: 'Ảnh concept',
-    image: 'https://images.unsplash.com/photo-1503919005314-30d93d07d823?auto=format&fit=crop&w=900&q=80'
-  },
-  {
-    id: 'd5',
-    category: 'Cưới',
-    title: 'The quiet vow',
-    type: 'Bộ concept',
-    image: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=900&q=80'
-  },
-  {
-    id: 'd6',
-    category: 'Newborn',
-    title: 'Tiny dream',
-    type: 'Ảnh concept',
-    image: 'https://images.unsplash.com/photo-1492725764893-90b379c2b6e7?auto=format&fit=crop&w=900&q=80'
-  },
-  {
-    id: 'd7',
-    category: 'Gia đình',
-    title: 'Together',
-    type: 'Bộ concept',
-    image: 'https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=900&q=80'
-  },
-  {
-    id: 'd8',
-    category: 'Beauty',
-    title: 'Studio portrait',
-    type: 'Ảnh concept',
-    image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=900&q=80'
-  },
-  {
-    id: 'd9',
-    category: 'Bầu',
-    title: 'Warm embrace',
-    type: 'Ảnh concept',
-    image: 'https://images.unsplash.com/photo-1518621012118-5d9c7f0e8e6d?auto=format&fit=crop&w=900&q=80'
-  },
-  {
-    id: 'd10',
-    category: 'Cưới',
-    title: 'Modern romance',
-    type: 'Bộ concept',
-    image: 'https://images.unsplash.com/photo-1537633552985-df8429e8048b?auto=format&fit=crop&w=900&q=80'
-  },
-  {
-    id: 'd11',
-    category: 'Kid',
-    title: 'Little explorer',
-    type: 'Bộ concept',
-    image: 'https://images.unsplash.com/photo-1471286174890-9c112ffca5b4?auto=format&fit=crop&w=900&q=80'
-  },
-  {
-    id: 'd12',
-    category: 'Gia đình',
-    title: 'Sunday memories',
-    type: 'Ảnh concept',
-    image: 'https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=900&q=80'
-  }
+  { id: 'd1', category: 'Bầu', title: 'Soft maternity', type: 'Bộ concept', image: 'https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=900&q=80' },
+  { id: 'd2', category: 'Beauty', title: 'Natural beauty', type: 'Ảnh concept', image: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=900&q=80' },
+  { id: 'd3', category: 'Baby', title: 'Little sunshine', type: 'Bộ concept', image: 'https://images.unsplash.com/photo-1519689680058-324335c77eba?auto=format&fit=crop&w=900&q=80' },
+  { id: 'd4', category: 'Kid', title: 'Playful day', type: 'Ảnh concept', image: 'https://images.unsplash.com/photo-1503919005314-30d93d07d823?auto=format&fit=crop&w=900&q=80' },
+  { id: 'd5', category: 'Cưới', title: 'The quiet vow', type: 'Bộ concept', image: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=900&q=80' },
+  { id: 'd6', category: 'Newborn', title: 'Tiny dream', type: 'Ảnh concept', image: 'https://images.unsplash.com/photo-1492725764893-90b379c2b6e7?auto=format&fit=crop&w=900&q=80' },
+  { id: 'd7', category: 'Gia đình', title: 'Together', type: 'Bộ concept', image: 'https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=900&q=80' },
+  { id: 'd8', category: 'Beauty', title: 'Studio portrait', type: 'Ảnh concept', image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=900&q=80' },
+  { id: 'd9', category: 'Bầu', title: 'Warm embrace', type: 'Ảnh concept', image: 'https://images.unsplash.com/photo-1518621012118-5d9c7f0e8e6d?auto=format&fit=crop&w=900&q=80' },
+  { id: 'd10', category: 'Cưới', title: 'Modern romance', type: 'Bộ concept', image: 'https://images.unsplash.com/photo-1537633552985-df8429e8048b?auto=format&fit=crop&w=900&q=80' },
+  { id: 'd11', category: 'Kid', title: 'Little explorer', type: 'Bộ concept', image: 'https://images.unsplash.com/photo-1471286174890-9c112ffca5b4?auto=format&fit=crop&w=900&q=80' },
+  { id: 'd12', category: 'Gia đình', title: 'Sunday memories', type: 'Ảnh concept', image: 'https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=900&q=80' }
 ]
 
 function App() {
@@ -137,16 +68,65 @@ function App() {
   const [notice, setNotice] = useState('')
   const [busy, setBusy] = useState(false)
 
+  const [session, setSession] = useState(null)
+  const [dbConcepts, setDbConcepts] = useState([])
+  const [newTitle, setNewTitle] = useState('')
+  const [newCategory, setNewCategory] = useState('Beauty')
+  const [newType, setNewType] = useState('Ảnh concept')
+  const [imageFile, setImageFile] = useState(null)
+
+  const isAdmin = Boolean(session?.user)
+
+  const loadConcepts = useCallback(async () => {
+    if (!supabase) return
+    const { data, error } = await supabase
+      .from('concepts')
+      .select('*')
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      console.error('Lỗi tải concept:', error.message)
+      return
+    }
+
+    setDbConcepts((data || []).map(item => ({
+      ...item,
+      image: item.image_url,
+      isDemo: false
+    })))
+  }, [])
+
+  useEffect(() => {
+    if (!supabase) return
+
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data?.session ?? null)
+      if (data?.session) loadConcepts()
+    })
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      setSession(newSession)
+      if (newSession) loadConcepts()
+    })
+
+    return () => subscription.unsubscribe()
+  }, [loadConcepts])
+
+  const allConcepts = useMemo(() => {
+    if (isAdmin && dbConcepts.length > 0) return [...dbConcepts, ...demos]
+    return demos
+  }, [dbConcepts, isAdmin])
+
   const filtered = useMemo(
     () =>
-      demos.filter(
+      allConcepts.filter(
         item =>
           (category === 'Tất cả' || item.category === category) &&
           `${item.title} ${item.category}`
             .toLowerCase()
             .includes(query.toLowerCase())
       ),
-    [category, query]
+    [allConcepts, category, query]
   )
 
   const toggle = item =>
@@ -165,13 +145,9 @@ function App() {
 
     try {
       const node = document.getElementById('export-sheet')
-
-      if (!node) {
-        throw new Error('Không tìm thấy bảng xuất ảnh.')
-      }
+      if (!node) throw new Error('Không tìm thấy bảng xuất ảnh.')
 
       node.style.display = 'block'
-
       await new Promise(resolve => setTimeout(resolve, 350))
 
       const canvas = await html2canvas(node, {
@@ -183,22 +159,15 @@ function App() {
       node.style.display = 'none'
 
       const link = document.createElement('a')
-      link.download = `concept-${(customer || 'khach-hang')
-        .trim()
-        .replace(/\s+/g, '-')}.jpg`
+      link.download = `concept-${(customer || 'khach-hang').trim().replace(/\s+/g, '-')}.jpg`
       link.href = canvas.toDataURL('image/jpeg', 0.94)
       link.click()
 
-      setNotice(
-        'Đã xuất bảng concept. M kiểm tra thư mục Downloads nha.'
-      )
+      setNotice('Đã xuất bảng concept. M kiểm tra thư mục Downloads nha.')
     } catch (e) {
       const node = document.getElementById('export-sheet')
       if (node) node.style.display = 'none'
-
-      setNotice(
-        'Chưa xuất được bảng ảnh. Thử lại hoặc kiểm tra kết nối ảnh mẫu nha.'
-      )
+      setNotice('Chưa xuất được bảng ảnh. Thử lại hoặc kiểm tra kết nối ảnh mẫu nha.')
     } finally {
       setBusy(false)
     }
@@ -208,25 +177,157 @@ function App() {
     e.preventDefault()
 
     if (!supabase) {
-      return setNotice(
-        'Chưa cấu hình Supabase. Cần thêm Project URL và anon/publishable key trước.'
-      )
+      return setNotice('Chưa cấu hình Supabase.')
     }
 
     setBusy(true)
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password
     })
 
     setBusy(false)
 
-    setNotice(
-      error
-        ? `Đăng nhập chưa được: ${error.message}`
-        : 'Đăng nhập thành công. Phần quản trị ảnh sẽ được nối ở bước tiếp theo.'
-    )
+    if (error) {
+      setNotice(`Đăng nhập chưa được: ${error.message}`)
+      return
+    }
+
+    setSession(data.session)
+    setAdminOpen(false)
+    setPassword('')
+    setNotice('Đăng nhập thành công! M có thể thêm và xóa concept now.')
+    await loadConcepts()
+  }
+
+  async function handleLogout() {
+    if (!supabase) return
+    await supabase.auth.signOut()
+    setSession(null)
+    setDbConcepts([])
+    setNotice('Đã đăng xuất.')
+  }
+
+  async function addConcept(e) {
+    e.preventDefault()
+
+    if (!isAdmin) {
+      setNotice('Cần đăng nhập admin trước.')
+      return
+    }
+
+    if (!imageFile) {
+      setNotice('Chọn ảnh từ thiết bị trước nha.')
+      return
+    }
+
+    if (!newTitle.trim()) {
+      setNotice('Nhập tên concept trước nha.')
+      return
+    }
+
+    if (!imageFile.type.startsWith('image/')) {
+      setNotice('File không phải ảnh. Chọn JPG, PNG hoặc WebP nha.')
+      return
+    }
+
+    if (imageFile.size > 15 * 1024 * 1024) {
+      setNotice('Ảnh quá lớn. Chọn ảnh dưới 15MB nha.')
+      return
+    }
+
+    setBusy(true)
+    setNotice('Đang tải ảnh lên...')
+
+    const safeName = imageFile.name
+      .normalize('NFKD')
+      .replace(/[^a-zA-Z0-9._-]/g, '-')
+      .replace(/-+/g, '-')
+
+    const storagePath = `${session.user.id}/${Date.now()}-${safeName || 'concept'}`
+
+    try {
+      const { error: uploadError } = await supabase.storage
+        .from(BUCKET)
+        .upload(storagePath, imageFile, {
+          cacheControl: '3600',
+          upsert: false,
+          contentType: imageFile.type
+        })
+
+      if (uploadError) {
+        setNotice(`Tải ảnh thất bại: ${uploadError.message}`)
+        return
+      }
+
+      const { data: publicData } = supabase.storage
+        .from(BUCKET)
+        .getPublicUrl(storagePath)
+
+      const { error: insertError } = await supabase
+        .from('concepts')
+        .insert({
+          title: newTitle.trim(),
+          category: newCategory,
+          type: newType,
+          image_url: publicData.publicUrl,
+          storage_path: storagePath
+        })
+
+      if (insertError) {
+        await supabase.storage.from(BUCKET).remove([storagePath])
+        setNotice(`Lưu concept thất bại: ${insertError.message}`)
+        return
+      }
+
+      await loadConcepts()
+      setNewTitle('')
+      setImageFile(null)
+      const fileInput = document.getElementById('concept-image-input')
+      if (fileInput) fileInput.value = ''
+      setNotice('Đã thêm concept thành công!')
+    } catch (err) {
+      console.error(err)
+      setNotice(`Lỗi: ${err.message}`)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function deleteConcept(item) {
+    if (!isAdmin || item.isDemo) return
+
+    const confirmed = window.confirm(`Xóa concept "${item.title}" chứ?`)
+    if (!confirmed) return
+
+    setBusy(true)
+    setNotice('Đang xóa...')
+
+    try {
+      const { error: rowError } = await supabase
+        .from('concepts')
+        .delete()
+        .eq('id', item.id)
+
+      if (rowError) {
+        setNotice(`Xóa thất bại: ${rowError.message}`)
+        return
+      }
+
+      if (item.storage_path) {
+        await supabase.storage.from(BUCKET).remove([item.storage_path])
+      }
+
+      setSelected(prev => prev.filter(x => x.id !== item.id))
+      await loadConcepts()
+      setNotice('Đã xóa concept.')
+    } catch (err) {
+      console.error(err)
+      setNotice(`Lỗi: ${err.message}`)
+    } finally {
+      setBusy(false)
+    }
   }
 
   return (
@@ -240,9 +341,7 @@ function App() {
             setView('library')
           }}
         >
-          <span>
-            <b>Kho Concept</b>
-          </span>
+          <span><b>Kho Concept</b></span>
         </a>
 
         <nav>
@@ -261,12 +360,20 @@ function App() {
           </button>
         </nav>
 
-        <button
-          className="admin-button"
-          onClick={() => setAdminOpen(true)}
-        >
-          <ShieldCheck size={16} /> Quản trị
-        </button>
+        {isAdmin ? (
+          <div className="admin-bar">
+            <span className="admin-badge">
+              <ShieldCheck size={14} /> Admin
+            </span>
+            <button className="admin-button" onClick={handleLogout}>
+              <LogOut size={16} /> Thoát
+            </button>
+          </div>
+        ) : (
+          <button className="admin-button" onClick={() => setAdminOpen(true)}>
+            <ShieldCheck size={16} /> Quản trị
+          </button>
+        )}
       </header>
 
       <main>
@@ -275,42 +382,20 @@ function App() {
             <span className="eyebrow">
               <Sparkles size={13} /> CONCEPT LIBRARY
             </span>
-
-            <h1>
-              Chọn concept.
-              <br />
-              <i>Lưu khoảnh khắc.</i>
-            </h1>
-
-            <p>
-              Khám phá ý tưởng chụp ảnh và chọn những khung hình m yêu thích.
-            </p>
-
+            <h1>Chọn concept.<br /><i>Lưu khoảnh khắc.</i></h1>
+            <p>Khám phá ý tưởng chụp ảnh và chọn những khung hình m yêu thích.</p>
             <div className="hero-note">
               <span className="note-dot" /> Bản thử nghiệm · Ảnh minh họa
             </div>
           </div>
-
           <div className="hero-art">
             <div className="hero-image hero-image-one">
-              <img
-                src="https://images.unsplash.com/photo-1537633552985-df8429e8048b?auto=format&fit=crop&w=700&q=80"
-                alt="Ảnh minh họa concept"
-              />
+              <img src="https://images.unsplash.com/photo-1537633552985-df8429e8048b?auto=format&fit=crop&w=700&q=80" alt="Ảnh minh họa concept" />
             </div>
-
             <div className="hero-image hero-image-two">
-              <img
-                src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=500&q=80"
-                alt="Ảnh minh họa chân dung"
-              />
+              <img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=500&q=80" alt="Ảnh minh họa chân dung" />
             </div>
-
-            <div className="hero-stamp">
-              IDEAS
-              <br />
-              TO KEEP
-            </div>
+            <div className="hero-stamp">IDEAS<br />TO KEEP</div>
           </div>
         </section>
 
@@ -323,21 +408,59 @@ function App() {
           </div>
         )}
 
+        {isAdmin && view === 'library' && (
+          <div className="admin-panel">
+            <h3><Plus size={18} /> Thêm concept mới</h3>
+            <form onSubmit={addConcept} className="add-form">
+              <label>
+                Tên concept
+                <input
+                  value={newTitle}
+                  onChange={e => setNewTitle(e.target.value)}
+                  placeholder="Nhập tên concept..."
+                />
+              </label>
+              <label>
+                Danh mục
+                <select value={newCategory} onChange={e => setNewCategory(e.target.value)}>
+                  {categories.filter(c => c !== 'Tất cả').map(c => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                Loại
+                <select value={newType} onChange={e => setNewType(e.target.value)}>
+                  <option value="Ảnh concept">Ảnh concept</option>
+                  <option value="Bộ concept">Bộ concept</option>
+                </select>
+              </label>
+              <label>
+                Ảnh
+                <input
+                  id="concept-image-input"
+                  type="file"
+                  accept="image/*"
+                  onChange={e => setImageFile(e.target.files[0])}
+                />
+              </label>
+              <button className="primary" disabled={busy}>
+                {busy ? 'Đang xử lý...' : <><Upload size={16} /> Thêm concept</>}
+              </button>
+            </form>
+          </div>
+        )}
+
         <div className="section-heading">
           <div>
             <span className="eyebrow">TÌM CẢM HỨNG</span>
-            <h2>
-              {view === 'selected'
-                ? 'Concept đã chọn'
-                : 'Thư viện concept'}
-            </h2>
+            <h2>{view === 'selected' ? 'Concept đã chọn' : 'Thư viện concept'}</h2>
             <p>
               {view === 'selected'
                 ? 'Rà soát lựa chọn trước khi gửi cho ekip.'
                 : 'Chọn một hoặc nhiều ảnh phù hợp với buổi chụp.'}
             </p>
           </div>
-
           <div className="heading-actions">
             <label className="search">
               <Search size={17} />
@@ -347,13 +470,9 @@ function App() {
                 placeholder="Tìm concept..."
               />
             </label>
-
             <button
               className="filter-button"
-              onClick={() => {
-                setCategory('Tất cả')
-                setQuery('')
-              }}
+              onClick={() => { setCategory('Tất cả'); setQuery('') }}
             >
               <SlidersHorizontal size={16} /> Làm mới
             </button>
@@ -364,9 +483,7 @@ function App() {
           {categories.map(c => (
             <button
               key={c}
-              className={
-                category === c ? 'category active' : 'category'
-              }
+              className={category === c ? 'category active' : 'category'}
               onClick={() => setCategory(c)}
             >
               {c}
@@ -384,21 +501,9 @@ function App() {
                 placeholder="Nhập tên khách..."
               />
             </label>
-
             <span>{selected.length} ảnh đã chọn</span>
-
-            <button
-              className="primary"
-              onClick={exportCollage}
-              disabled={busy}
-            >
-              {busy ? (
-                'Đang xuất...'
-              ) : (
-                <>
-                  <Download size={16} /> Xuất bảng ảnh
-                </>
-              )}
+            <button className="primary" onClick={exportCollage} disabled={busy}>
+              {busy ? 'Đang xuất...' : <><Download size={16} /> Xuất bảng ảnh</>}
             </button>
           </div>
         )}
@@ -406,7 +511,6 @@ function App() {
         <section className="gallery">
           {(view === 'selected' ? selected : filtered).map(item => {
             const isSelected = selected.some(x => x.id === item.id)
-
             return (
               <article
                 className={`photo-card ${isSelected ? 'is-selected' : ''}`}
@@ -424,48 +528,48 @@ function App() {
                   </span>
                   <span className="photo-type">{item.type}</span>
                 </button>
-
                 <div className="photo-meta">
                   <div>
                     <span>{item.category}</span>
                     <h3>{item.title}</h3>
                   </div>
-
-                  <button
-                    className={`heart ${isSelected ? 'heart-on' : ''}`}
-                    onClick={() => toggle(item)}
-                    aria-label="Chọn ảnh"
-                  >
-                    <Heart
-                      size={18}
-                      fill={isSelected ? 'currentColor' : 'none'}
-                    />
-                  </button>
+                  <div className="photo-actions">
+                    <button
+                      className={`heart ${isSelected ? 'heart-on' : ''}`}
+                      onClick={() => toggle(item)}
+                      aria-label="Chọn ảnh"
+                    >
+                      <Heart size={18} fill={isSelected ? 'currentColor' : 'none'} />
+                    </button>
+                    {isAdmin && !item.isDemo && (
+                      <button
+                        className="delete-btn"
+                        onClick={() => deleteConcept(item)}
+                        aria-label="Xóa concept"
+                        disabled={busy}
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    )}
+                  </div>
                 </div>
               </article>
             )
           })}
 
-          {(
-            (view === 'selected' && selected.length === 0) ||
-            (view === 'library' && filtered.length === 0)
-          ) && (
+          {((view === 'selected' && selected.length === 0) ||
+            (view === 'library' && filtered.length === 0)) && (
             <div className="empty">
               <Images size={30} />
               <h3>
-                {view === 'selected'
-                  ? 'Chưa có concept nào được chọn'
-                  : 'Không tìm thấy concept'}
+                {view === 'selected' ? 'Chưa có concept nào được chọn' : 'Không tìm thấy concept'}
               </h3>
               <p>
                 {view === 'selected'
                   ? 'Quay lại thư viện và bấm dấu + trên ảnh m thích.'
                   : 'Thử từ khóa khác hoặc làm mới bộ lọc.'}
               </p>
-              <button
-                className="secondary"
-                onClick={() => setView('library')}
-              >
+              <button className="secondary" onClick={() => setView('library')}>
                 Về thư viện
               </button>
             </div>
@@ -478,13 +582,8 @@ function App() {
               <b>Đã tìm được concept ưng ý?</b>
               <span>Chọn ảnh rồi gom thành một bảng gửi ekip.</span>
             </div>
-
-            <button
-              className="primary"
-              onClick={() => setView('selected')}
-            >
-              Xem concept đã chọn{' '}
-              <ArrowLeft size={16} className="arrow-flip" />
+            <button className="primary" onClick={() => setView('selected')}>
+              Xem concept đã chọn <ArrowLeft size={16} className="arrow-flip" />
             </button>
           </div>
         )}
@@ -492,9 +591,7 @@ function App() {
 
       <footer>
         <div className="brand footer-brand">
-          <span>
-            <b>Kho Concept</b>
-          </span>
+          <span><b>Kho Concept</b></span>
         </div>
         <span>Concept library · Bản thử nghiệm</span>
         <span>© KHO CONCEPT</span>
@@ -509,39 +606,23 @@ function App() {
             <p>Khách hàng: {customer.trim() || 'Chưa nhập tên'}</p>
           </div>
         </div>
-
         <div className="export-grid">
           {selected.map((item, i) => (
             <div className="export-tile" key={item.id}>
-              <img
-                src={item.image}
-                crossOrigin="anonymous"
-                alt={item.title}
-              />
+              <img src={item.image} crossOrigin="anonymous" alt={item.title} />
               <div>
-                <small>
-                  {String(i + 1).padStart(2, '0')} · {item.category}
-                </small>
+                <small>{String(i + 1).padStart(2, '0')} · {item.category}</small>
                 <b>{item.title}</b>
               </div>
             </div>
           ))}
         </div>
-
-        <div className="export-footer">
-          CONCEPT REFERENCE · KHO CONCEPT
-        </div>
+        <div className="export-footer">CONCEPT REFERENCE · KHO CONCEPT</div>
       </div>
 
       {adminOpen && (
-        <div
-          className="modal-backdrop"
-          onClick={() => setAdminOpen(false)}
-        >
-          <div
-            className="admin-modal"
-            onClick={e => e.stopPropagation()}
-          >
+        <div className="modal-backdrop" onClick={() => setAdminOpen(false)}>
+          <div className="admin-modal" onClick={e => e.stopPropagation()}>
             <button
               className="modal-close"
               onClick={() => setAdminOpen(false)}
@@ -549,16 +630,11 @@ function App() {
             >
               <X size={18} />
             </button>
-
             <span className="eyebrow">
               <ShieldCheck size={14} /> KHU VỰC QUẢN TRỊ
             </span>
-
             <h2>Đăng nhập admin</h2>
-            <p>
-              Đăng nhập bằng tài khoản đã tạo trong Supabase Authentication.
-            </p>
-
+            <p>Đăng nhập bằng tài khoản đã tạo trong Supabase Authentication.</p>
             <form onSubmit={signInAdmin}>
               <label>
                 Email
@@ -570,7 +646,6 @@ function App() {
                   placeholder="email@example.com"
                 />
               </label>
-
               <label>
                 Mật khẩu
                 <input
@@ -581,15 +656,12 @@ function App() {
                   placeholder="Mật khẩu admin"
                 />
               </label>
-
               <button className="primary full" disabled={busy}>
                 {busy ? 'Đang xử lý...' : 'Đăng nhập'}
               </button>
             </form>
-
             <small className="modal-foot">
-              Màn hình đăng nhập đã dựng. Công cụ tải và quản lý ảnh sẽ được
-              nối ở bước tiếp theo.
+              Sau khi đăng nhập, m có thể thêm và xóa concept trong thư viện.
             </small>
           </div>
         </div>
