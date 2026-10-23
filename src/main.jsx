@@ -73,7 +73,7 @@ function App() {
   const [newTitle, setNewTitle] = useState('')
   const [newCategory, setNewCategory] = useState('Beauty')
   const [newType, setNewType] = useState('Ảnh concept')
-  const [imageFile, setImageFile] = useState(null)
+  const [imageFiles, setImageFiles] = useState([])
 
   const isAdmin = Boolean(session?.user)
 
@@ -217,8 +217,8 @@ function App() {
       return
     }
 
-    if (!imageFile) {
-      setNotice('Chọn ảnh từ thiết bị trước nha.')
+    if (!imageFiles.length) {
+      setNotice('Chọn ít nhất 1 ảnh từ thiết bị trước nha.')
       return
     }
 
@@ -227,66 +227,86 @@ function App() {
       return
     }
 
-    if (!imageFile.type.startsWith('image/')) {
-      setNotice('File không phải ảnh. Chọn JPG, PNG hoặc WebP nha.')
-      return
-    }
-
-    if (imageFile.size > 15 * 1024 * 1024) {
-      setNotice('Ảnh quá lớn. Chọn ảnh dưới 15MB nha.')
-      return
+    for (const file of imageFiles) {
+      if (!file.type.startsWith('image/')) {
+        setNotice(`File "${file.name}" không phải ảnh. Chọn JPG, PNG hoặc WebP nha.`)
+        return
+      }
+      if (file.size > 15 * 1024 * 1024) {
+        setNotice(`Ảnh "${file.name}" quá lớn. Chọn ảnh dưới 15MB nha.`)
+        return
+      }
     }
 
     setBusy(true)
-    setNotice('Đang tải ảnh lên...')
+    setNotice(`Đang tải ${imageFiles.length} ảnh lên...`)
 
-    const safeName = imageFile.name
-      .normalize('NFKD')
-      .replace(/[^a-zA-Z0-9._-]/g, '-')
-      .replace(/-+/g, '-')
-
-    const storagePath = `${session.user.id}/${Date.now()}-${safeName || 'concept'}`
+    let successCount = 0
+    let failCount = 0
 
     try {
-      const { error: uploadError } = await supabase.storage
-        .from(BUCKET)
-        .upload(storagePath, imageFile, {
-          cacheControl: '3600',
-          upsert: false,
-          contentType: imageFile.type
-        })
+      for (let i = 0; i < imageFiles.length; i++) {
+        const file = imageFiles[i]
+        const safeName = file.name
+          .normalize('NFKD')
+          .replace(/[^a-zA-Z0-9._-]/g, '-')
+          .replace(/-+/g, '-')
 
-      if (uploadError) {
-        setNotice(`Tải ảnh thất bại: ${uploadError.message}`)
-        return
-      }
+        const storagePath = `${session.user.id}/${Date.now()}-${safeName || 'concept'}`
 
-      const { data: publicData } = supabase.storage
-        .from(BUCKET)
-        .getPublicUrl(storagePath)
+        const { error: uploadError } = await supabase.storage
+          .from(BUCKET)
+          .upload(storagePath, file, {
+            cacheControl: '3600',
+            upsert: false,
+            contentType: file.type
+          })
 
-      const { error: insertError } = await supabase
-        .from('concepts')
-        .insert({
-          title: newTitle.trim(),
-          category: newCategory,
-          type: newType,
-          image_url: publicData.publicUrl,
-          storage_path: storagePath
-        })
+        if (uploadError) {
+          console.error(`Lỗi tải ảnh ${file.name}:`, uploadError.message)
+          failCount++
+          continue
+        }
 
-      if (insertError) {
-        await supabase.storage.from(BUCKET).remove([storagePath])
-        setNotice(`Lưu concept thất bại: ${insertError.message}`)
-        return
+        const { data: publicData } = supabase.storage
+          .from(BUCKET)
+          .getPublicUrl(storagePath)
+
+        const conceptTitle = imageFiles.length > 1
+          ? `${newTitle.trim()} ${i + 1}`
+          : newTitle.trim()
+
+        const { error: insertError } = await supabase
+          .from('concepts')
+          .insert({
+            title: conceptTitle,
+            category: newCategory,
+            type: newType,
+            image_url: publicData.publicUrl,
+            storage_path: storagePath
+          })
+
+        if (insertError) {
+          await supabase.storage.from(BUCKET).remove([storagePath])
+          console.error(`Lỗi lưu concept ${file.name}:`, insertError.message)
+          failCount++
+          continue
+        }
+
+        successCount++
       }
 
       await loadConcepts()
       setNewTitle('')
-      setImageFile(null)
+      setImageFiles([])
       const fileInput = document.getElementById('concept-image-input')
       if (fileInput) fileInput.value = ''
-      setNotice('Đã thêm concept thành công!')
+
+      if (failCount === 0) {
+        setNotice(`Đã thêm ${successCount} concept thành công!`)
+      } else {
+        setNotice(`Thành công: ${successCount}, thất bại: ${failCount}.`)
+      }
     } catch (err) {
       console.error(err)
       setNotice(`Lỗi: ${err.message}`)
@@ -436,12 +456,13 @@ function App() {
                 </select>
               </label>
               <label>
-                Ảnh
+                Ảnh (chọn nhiều)
                 <input
                   id="concept-image-input"
                   type="file"
                   accept="image/*"
-                  onChange={e => setImageFile(e.target.files[0])}
+                  multiple
+                  onChange={e => setImageFiles(Array.from(e.target.files))}
                 />
               </label>
               <button className="primary" disabled={busy}>
