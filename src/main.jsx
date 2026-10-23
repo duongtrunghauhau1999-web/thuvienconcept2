@@ -75,8 +75,9 @@ function App() {
 
   return <div className="app">
     <header className="topbar">
-      <a className="brand" href="#" onClick={e=>{e.preventDefault();setView('library')}}>
-        <span className="brand-mark">M</span><span><b>MOI</b><small>PHOTOGRAPHY</small></span>
+            <a className="brand" href="#" onClick={e=>{e.preventDefault();setView('library')}}>
+  <span><b>Kho Concept</b></span>
+</a>
       </a>
       <nav>
         <button className={view==='library'?'nav-active':''} onClick={()=>setView('library')}>Thư viện concept</button>
@@ -135,12 +136,12 @@ function App() {
       {view==='library' && <div className="bottom-cta"><div><b>Đã tìm được concept ưng ý?</b><span>Chọn ảnh rồi gom thành một bảng gửi ekip.</span></div><button className="primary" onClick={()=>setView('selected')}>Xem concept đã chọn <ArrowLeft size={16} className="arrow-flip"/></button></div>}
     </main>
 
-    <footer><div className="brand footer-brand"><span className="brand-mark">M</span><span><b>MOI</b><small>PHOTOGRAPHY</small></span></div><span>Concept library · Bản thử nghiệm</span><span>© MOI Photography</span></footer>
+    <footer><div className="brand footer-brand"><span><b>Kho Concept</b></span></div><span>Concept library · Bản thử nghiệm</span><span>© KHO CONCEPT</span></footer>
 
     <div id="export-sheet" className="export-sheet">
-      <div className="export-header"><div className="brand-mark">M</div><div><div className="export-kicker">MOI PHOTOGRAPHY</div><h2>BẢNG CONCEPT CHỤP ẢNH</h2><p>Khách hàng: {customer.trim() || 'Chưa nhập tên'}</p></div></div>
+      <div className="export-header"><div className="brand-mark">M</div><div><div className="export-kicker">KHO CONCEPT </div><h2>BẢNG CONCEPT CHỤP ẢNH</h2><p>Khách hàng: {customer.trim() || 'Chưa nhập tên'}</p></div></div>
       <div className="export-grid">{selected.map((item,i)=><div className="export-tile" key={item.id}><img src={item.image} crossOrigin="anonymous" alt={item.title}/><div><small>{String(i+1).padStart(2,'0')} · {item.category}</small><b>{item.title}</b></div></div>)}</div>
-      <div className="export-footer">CONCEPT REFERENCE · MOI PHOTOGRAPHY</div>
+      <div className="export-footer">CONCEPT REFERENCE · KHO CONCEPT </div>
     </div>
 
     {adminOpen && <div className="modal-backdrop" onClick={()=>setAdminOpen(false)}><div className="admin-modal" onClick={e=>e.stopPropagation()}>
