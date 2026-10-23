@@ -96,13 +96,24 @@ function App() {
     })))
   }, [])
 
-  useEffect(() => {
+    useEffect(() => {
     if (!supabase) return
+
+    // Luôn tải concept cho tất cả người dùng
+    loadConcepts()
 
     supabase.auth.getSession().then(({ data }) => {
       setSession(data?.session ?? null)
-      if (data?.session) loadConcepts()
     })
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      setSession(newSession)
+      loadConcepts()
+    })
+
+    return () => subscription.unsubscribe()
+  }, [loadConcepts])
+
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
       setSession(newSession)
@@ -112,10 +123,11 @@ function App() {
     return () => subscription.unsubscribe()
   }, [loadConcepts])
 
-  const allConcepts = useMemo(() => {
-    if (isAdmin && dbConcepts.length > 0) return [...dbConcepts, ...demos]
+   const allConcepts = useMemo(() => {
+    if (dbConcepts.length > 0) return [...dbConcepts, ...demos]
     return demos
-  }, [dbConcepts, isAdmin])
+  }, [dbConcepts])
+
 
   const filtered = useMemo(
     () =>
