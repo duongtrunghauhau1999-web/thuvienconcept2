@@ -29,7 +29,7 @@
 .detail-nav:hover { background: rgba(255,255,255,1); }
 .detail-nav-left { left: 12px; }
 .detail-nav-right { right: 12px; }
-.detail-counter { position: absolute; bottom: 12px; right: 12px; background: rgba(0,0,0,0.6); color: #fff; padding: 4px 12px; border-radius: 20px; font-size: 12px; }
+.detail-counter { position: absolute; bottom: 12px; right: 12px; background: rgba(0,0,0,0.6); color: #fff; padding: 4px 12px; border-radius: 20px; font-size: 12px; } }
 .detail-info { display: flex; flex-direction: column; gap: 12px; }
 .detail-info h2 { font-family: 'Playfair Display',serif; font-size: 28px; font-weight: 500; margin: 4px 0; }
 .detail-type { font-size: 13px; color: #8d7b65; margin: 0; }
