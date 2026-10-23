@@ -109,11 +109,20 @@ function App() {
           <label className="search"><Search size={17}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Tìm concept..."/></label>
           <button className="filter-button" onClick={()=>{setCategory('Tất cả');setQuery('')}}><SlidersHorizontal size={16}/> Làm mới</button>
         </div>
+      
       </div>
 
       <div className="category-row">
-        
-{categories.map(c=><button key={c} className={category===c?'category active':'category'} onClick={()=>setCategory(c)}>{c}</button>)}
+        {categories.map(c => (
+          <button
+            key={c}
+            className={category === c ? 'category active' : 'category'}
+            onClick={() => setCategory(c)}
+          >
+            {c}
+          </button>
+        ))}
+      </div>
 
       </div>
 
