@@ -112,7 +112,9 @@ function App() {
       </div>
 
       <div className="category-row">
-        {categories.map(c=><button key={c} className={category===c?'category active':'category'} onClick={()=>setCategory(c)}>{c}</button>)}
+        
+{categories.map(c=><button key={c} className={category===c?'category active':'category'} onClick={()=>setCategory(c)}>{c}</button>)}
+
       </div>
 
       {view==='selected' && <div className="customer-bar"><label>Tên khách hàng<input value={customer} onChange={e=>setCustomer(e.target.value)} placeholder="Nhập tên khách..." /></label><span>{selected.length} ảnh đã chọn</span><button className="primary" onClick={exportCollage} disabled={busy}>{busy?'Đang xuất...':<><Download size={16}/> Xuất bảng ảnh</>}</button></div>}
