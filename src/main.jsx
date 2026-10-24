@@ -401,7 +401,7 @@ function App() {
               <Sparkles size={13} /> CONCEPT LIBRARY
             </span>
             <h1>Chọn concept.<br /><i>Lưu khoảnh khắc.</i></h1>
-            <p>Khám phá ý tưởng chụp ảnh và chọn những khung hình m yêu thích.</p>
+            <p>Khám phá ý tưởng chụp ảnh và chọn những khung hình mình yêu thích.</p>
             <div className="hero-note">
               <span className="note-dot" /> Bản thử nghiệm · Ảnh minh họa
             </div>
