@@ -18,7 +18,7 @@ import {
   Upload,
   LogOut
 } from 'lucide-react'
-import './styles.css'
+
 
 const supabaseUrl = 'https://rscpkibmvutmfawjsvpp.supabase.co'
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJzY3BraWJtdnV0bWZhd2pzdnBwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI3NTQwMzgsImV4cCI6MjEwODMzMDAzOH0.4ENz3UIDdZ5VWHJs9lvUhYxjV6Hay3mtVkL3-jjIkgU'
