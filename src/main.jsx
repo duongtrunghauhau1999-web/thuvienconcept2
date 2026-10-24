@@ -18,7 +18,7 @@ import {
   Upload,
   LogOut
 } from 'lucide-react'
-import './styles.css'
+
 
 const supabaseUrl = 'https://rscpkibmvutmfawjsvpp.supabase.co'
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJzY3BraWJtdnV0bWZhd2pzdnBwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI3NTQwMzgsImV4cCI6MjEwODMzMDAzOH0.4ENz3UIDdZ5VWHJs9lvUhYxjV6Hay3mtVkL3-jjIkgU'
@@ -96,13 +96,11 @@ function App() {
     })))
   }, [])
 
-  useEffect(() => {
+    useEffect(() => {
     if (!supabase) return
 
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data?.session ?? null)
-      if (data?.session) loadConcepts()
-    })
+    // Luôn tải concept cho tất cả người dùng
+    loadConcepts()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
       setSession(newSession)
@@ -112,10 +110,11 @@ function App() {
     return () => subscription.unsubscribe()
   }, [loadConcepts])
 
-  const allConcepts = useMemo(() => {
-    if (isAdmin && dbConcepts.length > 0) return [...dbConcepts, ...demos]
+   const allConcepts = useMemo(() => {
+    if (dbConcepts.length > 0) return [...dbConcepts, ...demos]
     return demos
-  }, [dbConcepts, isAdmin])
+  }, [dbConcepts])
+
 
   const filtered = useMemo(
     () =>
@@ -205,7 +204,6 @@ function App() {
     if (!supabase) return
     await supabase.auth.signOut()
     setSession(null)
-    setDbConcepts([])
     setNotice('Đã đăng xuất.')
   }
 
@@ -403,7 +401,7 @@ function App() {
               <Sparkles size={13} /> CONCEPT LIBRARY
             </span>
             <h1>Chọn concept.<br /><i>Lưu khoảnh khắc.</i></h1>
-            <p>Khám phá ý tưởng chụp ảnh và chọn những khung hình m yêu thích.</p>
+            <p>Khám phá ý tưởng chụp ảnh và chọn những khung hình mình yêu thích.</p>
             <div className="hero-note">
               <span className="note-dot" /> Bản thử nghiệm · Ảnh minh họa
             </div>
